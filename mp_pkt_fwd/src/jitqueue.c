@@ -24,6 +24,7 @@ Maintainer: Michael Coracin
 #include <assert.h>
 #include <math.h>
 
+#include "sort_r.h"
 #include "trace.h"
 #include "jitqueue.h"
 
@@ -154,11 +155,7 @@ void jit_queue_init(struct jit_queue_s *queue) {
     pthread_mutex_unlock(&mx_jit_queue);
 }
 
-#ifdef __MACH__
-  int compare(void *arg, const void *a, const void *b)
-#else
-  int compare(const void *a, const void *b, void *arg)
-#endif
+int compare(const void *a, const void *b, void *arg)
 {
     struct jit_node_s *p = (struct jit_node_s *)a;
     struct jit_node_s *q = (struct jit_node_s *)b;
@@ -182,11 +179,7 @@ void jit_sort_queue(struct jit_queue_s *queue) {
     }
 
     MSG_DEBUG(DEBUG_JIT, "sorting queue in ascending order packet timestamp - queue size:%u\n", queue->num_pkt);
-#ifdef __MACH__
-    qsort_r(queue->nodes, queue->num_pkt, sizeof(queue->nodes[0]), &counter, compare);
-#else
-    qsort_r(queue->nodes, queue->num_pkt, sizeof(queue->nodes[0]), compare, &counter);
-#endif
+    sort_r(queue->nodes, queue->num_pkt, sizeof(queue->nodes[0]), compare, &counter);
     MSG_DEBUG(DEBUG_JIT, "sorting queue done - swapped:%d\n", counter);
 }
 
